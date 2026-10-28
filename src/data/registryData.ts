@@ -74,6 +74,48 @@ export const PARADOX_REGISTRY_88: ParadoxDefinition[] = Array.from({ length: 88 
   };
 });
 
+export interface RegistryModelWeight {
+  id: number;
+  code: string;
+  category: ParadoxDefinition['category'];
+  dialecticWeight: number;
+  stability: number;
+  confidence: number;
+  importance: number;
+}
+
+export const REGISTRY_MODEL_WEIGHTS: RegistryModelWeight[] = PARADOX_REGISTRY_88.map((paradox) => {
+  const normalizedWeight = Number(paradox.dialecticWeight);
+  const stability = Number(Math.min(0.99, 0.60 + (normalizedWeight * 0.35)).toFixed(3));
+  const confidence = Number(Math.min(0.99, 0.72 + (normalizedWeight * 0.22)).toFixed(3));
+  const importance = Math.max(1, Math.min(10, Math.round(1 + normalizedWeight * 9)));
+
+  return {
+    id: paradox.id,
+    code: paradox.code,
+    category: paradox.category,
+    dialecticWeight: normalizedWeight,
+    stability,
+    confidence,
+    importance
+  };
+});
+
+export const REGISTRY_MODEL_WEIGHT_SUMMARY = {
+  totalParadoxes: REGISTRY_MODEL_WEIGHTS.length,
+  averageDialecticWeight: Number(
+    (REGISTRY_MODEL_WEIGHTS.reduce((sum, item) => sum + item.dialecticWeight, 0) / REGISTRY_MODEL_WEIGHTS.length).toFixed(3)
+  ),
+  weightedComposite: Number(
+    (
+      REGISTRY_MODEL_WEIGHTS.reduce((sum, item) => sum + item.dialecticWeight * item.importance, 0) /
+      REGISTRY_MODEL_WEIGHTS.reduce((sum, item) => sum + item.importance, 0)
+    ).toFixed(3)
+  ),
+  maxWeight: Number(Math.max(...REGISTRY_MODEL_WEIGHTS.map(item => item.dialecticWeight)).toFixed(3)),
+  minWeight: Number(Math.min(...REGISTRY_MODEL_WEIGHTS.map(item => item.dialecticWeight)).toFixed(3))
+};
+
 /**
  * 54-NODE MESH TOPOLOGY FOR DAISY HAMINJA AI (TETHER BUBBLE & FAILOVER MESH)
  */
